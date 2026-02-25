@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio-Quiz: Russische Grammatik (Männliche Stimme)</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e67e22;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 15px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; margin-bottom: 5px; }
+        h2 { font-weight: 300; color: var(--secondary-color); margin-bottom: 25px; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .audio-card {
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .play-btn {
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
+        }
+
+        .play-btn:hover { background-color: #d35400; transform: scale(1.05); }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-group label {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .choice-btn:hover { border-color: var(--secondary-color); background: #f7fafc; }
+
+        .correct { background-color: var(--success-color) !important; color: white !important; border-color: #1e7e34 !important; }
+        .incorrect { background-color: var(--error-color) !important; color: white !important; border-color: #bd2130 !important; }
+
+        .reveal-box {
+            background: #f1f2f6;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+            border: 1px dashed #ccc;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85em;
+            flex: 1;
+        }
+
+        .reset-shuffle-btn { background-color: var(--secondary-color); }
+        .solution-btn { background-color: #7f8c8d; }
+
+        @media (max-width: 600px) {
+            .quiz-grid { grid-template-columns: 1fr; }
+            .card-footer { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Hörverstehen (Männliche Stimme)</h1>
+    <h2>СЕЙЧАС oder ТЕПЕРЬ?</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong>
+        1. Drücke auf <b>▶</b>, um den russischen Satz zu hören (männliche Stimme).<br>
+        2. Welches Wort hast du gehört?<br>
+        3. Was ist die logische Bedeutung? (Moment vs. Veränderung).<br>
+        <em>Direktes Feedback: Grün = Richtig, Rot = Falsch.</em>
+    </div>
+
+    <div id="quiz-container">
+        <!-- Aufgaben werden generiert -->
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { sentence: "Я сейчас обедаю.", word: "сейчас", context: "Momentaufnahme" },
+        { sentence: "Раньше я жил в Москве, а теперь в Берлине.", word: "теперь", context: "Kontrast/Veränderung" },
+        { sentence: "Теперь всё понятно.", word: "теперь", context: "Kontrast/Veränderung" },
+        { sentence: "Сейчас идёт дождь.", word: "сейчас", context: "Momentaufnahme" },
+        { sentence: "Где ты сейчас?", word: "сейчас", context: "Momentaufnahme" },
+        { sentence: "Я бросил курить и теперь бегаю.", word: "теперь", context: "Kontrast/Veränderung" },
+        { sentence: "Подожди, я сейчас приду.", word: "сейчас", context: "Momentaufnahme" },
+        { sentence: "Раньше здесь был лес, а теперь город.", word: "теперь", context: "Kontrast/Veränderung" },
+        { sentence: "Сейчас без пяти минут восемь.", word: "сейчас", context: "Momentaufnahme" },
+        { sentence: "Мы купили машину, теперь мы много путешествуем.", word: "теперь", context: "Kontrast/Veränderung" }
+    ];
+
+    let maleVoice = null;
+
+    // Stimme laden
+    function loadVoices() {
+        const voices = window.speechSynthesis.getVoices();
+        // Suche nach russischen Stimmen, priorisiere Namen die oft männlich sind
+        const russianVoices = voices.filter(v => v.lang.includes('ru'));
+        
+        // Prioritätenliste für männliche Stimmen (System-abhängig)
+        maleVoice = russianVoices.find(v => 
+            v.name.includes('Pavel') || 
+            v.name.includes('Dmitry') || 
+            v.name.includes('Maxim') || 
+            v.name.includes('Microsoft Maksim') || 
+            v.name.includes('Google русский')
+        ) || russianVoices[0]; // Fallback auf erste russische Stimme
+    }
+
+    // Stimmen-Event für Chrome/Safari
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    function playAudio(text) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        if (maleVoice) utterance.voice = maleVoice;
+        utterance.lang = 'ru-RU';
+        utterance.rate = 0.85;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        const shuffled = shuffle([...quizData]);
+
+        shuffled.forEach((item, index) => {
+            const cardId = `card-${index}`;
+            const div = document.createElement('div');
+            div.className = 'audio-card';
+            div.id = cardId;
+            div.innerHTML = `
+                <div class="audio-controls">
+                    <button class="play-btn" onclick="playAudio('${item.sentence}')">▶</button>
+                    <strong>Aufgabe ${index + 1}</strong>
+                </div>
+                <div class="quiz-grid">
+                    <div class="option-group">
+                        <label>Gehörtes Wort:</label>
+                        <button class="choice-btn" onclick="check(this, '${item.word}')">сейчас</button>
+                        <button class="choice-btn" onclick="check(this, '${item.word}')">теперь</button>
+                    </div>
+                    <div class="option-group">
+                        <label>Bedeutung:</label>
+                        <button class="choice-btn" onclick="check(this, '${item.context}')">Momentaufnahme</button>
+                        <button class="choice-btn" onclick="check(this, '${item.context}')">Kontrast/Veränderung</button>
+                    </div>
+                </div>
+                <div class="reveal-box" id="reveal-${cardId}">Satz: ${item.sentence}</div>
+                <div class="card-footer">
+                    <button class="control-btn reset-shuffle-btn" onclick="resetAndShuffle()">Zurücksetzen & mischen</button>
+                    <button class="control-btn solution-btn" onclick="showSol('${cardId}', '${item.word}', '${item.context}')">Lösung anzeigen</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function check(btn, correctVal) {
+        const group = btn.parentElement;
+        const buttons = group.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (btn.innerText.trim() === correctVal) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+        }
+    }
+
+    function showSol(cardId, word, context) {
+        const card = document.getElementById(cardId);
+        const reveal = document.getElementById(`reveal-${cardId}`);
+        reveal.style.display = 'block';
+        
+        const btns = card.querySelectorAll('.choice-btn');
+        btns.forEach(b => {
+            b.classList.remove('correct', 'incorrect');
+            if (b.innerText.trim() === word || b.innerText.trim() === context) {
+                b.classList.add('correct');
+            }
+        });
+    }
+
+    function resetAndShuffle() {
+        window.speechSynthesis.cancel();
+        renderQuiz();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Start
+    window.onload = renderQuiz;
+</script>
+
+</body>
+</html>
