@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lückentext: СЕЙЧАС oder ТЕПЕРЬ?</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        /* Textbereich mit Lücken */
+        .story-box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            border-radius: 12px;
+            font-size: 1.25em;
+            text-align: justify;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Styling für die Dropdowns */
+        select {
+            appearance: none;
+            background-color: #fff;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-size: 0.9em;
+            font-family: inherit;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 4px;
+            outline: none;
+        }
+
+        select:hover {
+            border-color: var(--secondary-color);
+        }
+
+        /* Feedback-Farben */
+        select.correct {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border-color: #1e7e34 !important;
+        }
+
+        select.incorrect {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border-color: #bd2130 !important;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 1em;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .reset-btn { background-color: #95a5a6; }
+        .solution-btn { background-color: #7f8c8d; }
+        
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.98); }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            .story-box { font-size: 1.1em; padding: 20px; }
+            .controls { flex-direction: column; }
+            select { margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Lückentext: СЕЙЧАС oder ТЕПЕРЬ?</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Füllen Sie die Lücken im Text aus. 
+        Wählen Sie das passende Wort aus dem Dropdown-Menü.
+        <br><br>
+        • Nutzen Sie <strong>сейчас</strong> für Handlungen im <strong>momentanen Verlauf</strong>.
+        <br>• Nutzen Sie <strong>теперь</strong> für Situationen, die ein <strong>Ergebnis einer Änderung</strong> sind.
+        <br><br>
+        <em>Das Feld färbt sich sofort grün (richtig) oder rot (falsch).</em>
+    </div>
+
+    <div class="story-box">
+        Привет! Меня зовут Ира. Раньше я жила в Москве, а 
+        <select onchange="check(this)" data-ans="теперь">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select> 
+        я живу в Берлине. 
+        <select onchange="check(this)" data-ans="сейчас">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select> 
+        я сижу в уютном кафе и пишу этот текст. Посмотрите в окно: 
+        <select onchange="check(this)" data-ans="сейчас">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select> 
+        идёт дождь. 
+        Раньше я совсем не понимала немецкий язык, но я много занималась, и 
+        <select onchange="check(this)" data-ans="теперь">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select> 
+        я всё понимаю. 
+        Мой брат тоже здесь. 
+        <select onchange="check(this)" data-ans="сейчас">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select> 
+        он читает книгу в углу кафе. 
+        Мы недавно купили машину, и 
+        <select onchange="check(this)" data-ans="теперь">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select> 
+        мы можем часто ездить в горы. 
+        А что вы делаете 
+        <select onchange="check(this)" data-ans="сейчас">
+            <option value="">---</option>
+            <option value="сейчас">сейчас</option>
+            <option value="теперь">теперь</option>
+        </select>?
+    </div>
+
+    <div class="controls">
+        <button class="reset-btn" onclick="resetAll()">Zurücksetzen</button>
+        <button class="solution-btn" onclick="showSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Funktion zur sofortigen Überprüfung
+    function check(el) {
+        const selectedValue = el.value;
+        const correctAnswer = el.getAttribute('data-ans');
+
+        // Klasse zurücksetzen
+        el.classList.remove('correct', 'incorrect');
+
+        if (selectedValue === "") {
+            return; // Nichts ausgewählt
+        }
+
+        if (selectedValue === correctAnswer) {
+            el.classList.add('correct');
+        } else {
+            el.classList.add('incorrect');
+        }
+    }
+
+    // Alles auf Anfang
+    function resetAll() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    // Lösungen automatisch ausfüllen
+    function showSolutions() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = sel.getAttribute('data-ans');
+            sel.classList.remove('incorrect');
+            sel.classList.add('correct');
+        });
+    }
+</script>
+
+</body>
+</html>
