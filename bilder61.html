@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bild-Zuordnung: СЕЙЧАС vs. ТЕПЕРЬ</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f0f3f5;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; margin-bottom: 10px; }
+        
+        .instruction {
+            background: #e1f5fe;
+            padding: 15px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+
+        /* Bereich der Bildkarten */
+        #card-pool {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            background: #fdfdfd;
+            padding: 20px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            min-height: 180px;
+            margin-bottom: 30px;
+        }
+
+        .situation-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: grab;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .situation-card:active { cursor: grabbing; transform: scale(1.05); }
+
+        .icon-box {
+            font-size: 40px;
+            margin-bottom: 10px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-text {
+            font-size: 0.85em;
+            color: #4a5568;
+            line-height: 1.2;
+        }
+
+        /* Ziel-Zonen */
+        .drop-zones-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .drop-zone {
+            min-height: 350px;
+            border: 3px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: background-color 0.3s;
+            align-items: center;
+        }
+
+        .drop-zone h3 {
+            margin-top: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        .zone-seychas { background-color: #ebf8ff; border-color: #3498db; }
+        .zone-teper { background-color: #fefcbf; border-color: #ecc94b; }
+
+        /* Feedback Styles */
+        .correct { background-color: var(--success-color) !important; color: white !important; }
+        .incorrect { background-color: var(--error-color) !important; color: white !important; }
+        .correct .card-text, .incorrect .card-text { color: white; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .reset-btn { background-color: #718096; }
+        .solution-btn { background-color: #4a5568; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .drop-zones-container { grid-template-columns: 1fr; }
+            #card-pool { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Visuelles Quiz: СЕЙЧАС oder ТЕПЕРЬ?</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Analysiere die Bilder. Zeige auf die Situation:
+        <br>• Nutze <strong>СЕЙЧАС</strong> für Dinge, die <strong>gerade jetzt</strong> passieren (Momentaufnahme).
+        <br>• Nutze <strong>ТЕПЕРЬ</strong> für Zustände, die das <strong>Ergebnis einer Änderung</strong> sind (Vergleich zu früher).
+    </div>
+
+    <div id="card-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Cards geladen via JS -->
+    </div>
+
+    <div class="drop-zones-container">
+        <div class="drop-zone zone-seychas" id="zone-seychas" data-cat="сейчас" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3>СЕЙЧАС</h3>
+            <p style="font-size: 0.8em; color: #2b6cb0;">„Gerade in diesem Moment“</p>
+        </div>
+        <div class="drop-zone zone-teper" id="zone-teper" data-cat="теперь" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3>ТЕПЕРЬ</h3>
+            <p style="font-size: 0.8em; color: #b7791f;">„Früher war es anders, jetzt...“</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="reset-btn" onclick="resetGame()">Neu mischen</button>
+        <button class="solution-btn" onclick="showSolution()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const situations = [
+        { id: 1, icon: "😴", text: "Er schläft gerade.", cat: "сейчас" },
+        { id: 2, icon: "🏚️ ➡️ 🏠", text: "Früher Ruine, heute ein Haus.", cat: "теперь" },
+        { id: 3, icon: "🌧️", text: "Es regnet gerade draußen.", cat: "сейчас" },
+        { id: 4, icon: "👶 ➡️ 🧔", text: "Früher Kind, heute Erwachsen.", cat: "теперь" },
+        { id: 5, icon: "🍜", text: "Sie isst gerade eine Suppe.", cat: "сейчас" },
+        { id: 6, icon: "🚬 ➡️ 🚭", text: "Er hat aufgehört zu rauchen.", cat: "теперь" },
+        { id: 7, icon: "✈️", text: "Das Flugzeug fliegt gerade.", cat: "сейчас" },
+        { id: 8, icon: "🚲 ➡️ 🚗", text: "Früher Fahrrad, heute Auto.", cat: "теперь" }
+    ];
+
+    function initPool() {
+        const pool = document.getElementById('card-pool');
+        pool.innerHTML = '';
+        
+        // Zufällig mischen
+        const shuffled = [...situations].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach(sit => {
+            const card = document.createElement('div');
+            card.className = 'situation-card';
+            card.id = 'card-' + sit.id;
+            card.draggable = true;
+            card.setAttribute('data-cat', sit.cat);
+            card.ondragstart = drag;
+            
+            card.innerHTML = `
+                <div class="icon-box">${sit.icon}</div>
+                <div class="card-text">${sit.text}</div>
+            `;
+            pool.appendChild(card);
+        });
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("textID", ev.target.id);
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const id = ev.dataTransfer.getData("textID");
+        const card = document.getElementById(id);
+        let target = ev.target;
+
+        // Sicherstellen, dass wir die Zone treffen
+        while (target && !target.classList.contains('drop-zone') && target.id !== 'card-pool') {
+            target = target.parentElement;
+        }
+
+        if (target) {
+            target.appendChild(card);
+            validateCard(card, target);
+        }
+    }
+
+    function validateCard(card, zone) {
+        card.classList.remove('correct', 'incorrect');
+        
+        const cardCat = card.getAttribute('data-cat');
+        const zoneCat = zone.getAttribute('data-cat');
+
+        if (!zoneCat) return; // Zurück im Pool
+
+        if (cardCat === zoneCat) {
+            card.classList.add('correct');
+        } else {
+            card.classList.add('incorrect');
+        }
+    }
+
+    function resetGame() {
+        document.querySelectorAll('.drop-zone').forEach(z => {
+            const cards = z.querySelectorAll('.situation-card');
+            cards.forEach(c => c.remove());
+        });
+        initPool();
+    }
+
+    function showSolution() {
+        situations.forEach(sit => {
+            const card = document.getElementById('card-' + sit.id);
+            const targetZone = document.getElementById('zone-' + (sit.cat === 'сейчас' ? 'seychas' : 'teper'));
+            
+            card.classList.remove('incorrect');
+            card.classList.add('correct');
+            targetZone.appendChild(card);
+        });
+    }
+
+    window.onload = initPool;
+</script>
+
+</body>
+</html>
