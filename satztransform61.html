@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satz-Transformator: 10 Übungen zu СЕЙЧАС und ТЕПЕРЬ</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #8e44ad;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; margin-bottom: 10px; }
+        h2 { font-weight: 300; color: var(--secondary-color); }
+
+        .instruction {
+            background: #f3e5f5;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .transformer-card {
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 35px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .original-sentence {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .original-sentence b { color: #3498db; }
+
+        .transformation-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .label {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: #a0aec0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1em;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .choice-btn:hover { border-color: var(--secondary-color); background: #fdfaff; }
+
+        .result-sentence {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #e8f5e9;
+            border: 2px solid #2ecc71;
+            display: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+            color: #1b5e20;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .correct { background-color: var(--success-color) !important; color: white !important; border-color: #1e7e34 !important; }
+        .incorrect { background-color: var(--error-color) !important; color: white !important; border-color: #bd2130 !important; }
+
+        .footer-btns {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .main-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85em;
+        }
+
+        .reset-btn { background: #a0aec0; }
+        .solution-btn { background: #718096; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .original-sentence { font-size: 1.1em; }
+            .footer-btns { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Satz-Transformator</h1>
+    <h2>Kontext-Wechsel: СЕЙЧАС ➔ ТЕПЕРЬ</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Sätze mit <b>сейчас</b> beschreiben nur den Moment. Sätze mit <b>теперь</b> betonen eine Veränderung oder einen Kontrast zu früher.
+        <br><br>
+        Wählen Sie den logisch passenden Kontrast aus der Vergangenheit. Bei richtiger Wahl wird der Satz automatisch mit <b>теперь</b> neu formuliert.
+    </div>
+
+    <!-- Karte 1 -->
+    <div class="transformer-card" id="card1">
+        <div class="label">Original (Momentaufnahme):</div>
+        <div class="original-sentence">Я <b>сейчас</b> живу в Берлине.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast (Раньше...):</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, false, 'card1')">Раньше я часто ездил в Берлин...</button>
+                <button class="choice-btn" onclick="transform(this, true, 'card1', 'Раньше я жил в Москве, а теперь живу в Берлине.')">Раньше я жил в Москве...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card1')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card1', 1)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 2 -->
+    <div class="transformer-card" id="card2">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Он <b>сейчас</b> работает директором.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, true, 'card2', 'Раньше он был учителем, а теперь работает директором.')">Раньше он был учителем...</button>
+                <button class="choice-btn" onclick="transform(this, false, 'card2')">Раньше он не знал директора...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card2')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card2', 0)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 3 -->
+    <div class="transformer-card" id="card3">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Я <b>сейчас</b> понимаю это правило.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, false, 'card3')">Раньше я читал это правило...</button>
+                <button class="choice-btn" onclick="transform(this, true, 'card3', 'Раньше я не понимал это правило, а теперь понимаю.')">Раньше я не понимал это правило...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card3')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card3', 1)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 4 -->
+    <div class="transformer-card" id="card4">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Мы <b>сейчас</b> ездим на машине.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, true, 'card4', 'Раньше у нас не было машины, а теперь мы ездим на машине.')">Раньше у нас не было машины...</button>
+                <button class="choice-btn" onclick="transform(this, false, 'card4')">Раньше мы видели эту машину...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card4')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card4', 0)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 5 -->
+    <div class="transformer-card" id="card5">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Она <b>сейчас</b> много читаet.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, false, 'card5')">Раньше она покупала книги...</button>
+                <button class="choice-btn" onclick="transform(this, true, 'card5', 'Раньше у неё не было времени, а теперь она много читает.')">Раньше у неё не было времени...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card5')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card5', 1)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 6 -->
+    <div class="transformer-card" id="card6">
+        <div class="label">Original:</div>
+        <div class="original-sentence"><b>Сейчас</b> светит солнце.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, true, 'card6', 'Раньше шёл дождь, а теперь светит солнце.')">Раньше шёл дождь...</button>
+                <button class="choice-btn" onclick="transform(this, false, 'card6')">Раньше солнце было жёлтым...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card6')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card6', 0)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 7 -->
+    <div class="transformer-card" id="card7">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Мы <b>сейчас</b> друзья.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, false, 'card7')">Раньше мы вместе работали...</button>
+                <button class="choice-btn" onclick="transform(this, true, 'card7', 'Раньше мы не знали друг друга, а теперь мы друзья.')">Раньше we не знали друг друга...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card7')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card7', 1)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 8 -->
+    <div class="transformer-card" id="card8">
+        <div class="label">Original:</div>
+        <div class="original-sentence">У всех <b>сейчас</b> есть телефоны.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, true, 'card8', 'В 17-м веке телефонов не было, а теперь у всех есть телефоны.')">В 17-м веке телефонов не было...</button>
+                <button class="choice-btn" onclick="transform(this, false, 'card8')">В прошлом году телефоны были дороже...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card8')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card8', 0)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 9 -->
+    <div class="transformer-card" id="card9">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Я <b>сейчас</b> бегаю каждое утро.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, false, 'card9')">Раньше я покупал кроссовки...</button>
+                <button class="choice-btn" onclick="transform(this, true, 'card9', 'Раньше я был очень ленивым, а теперь бегаю каждое утро.')">Раньше я был очень ленивым...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card9')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card9', 1)">Lösung</button>
+        </div>
+    </div>
+
+    <!-- Karte 10 -->
+    <div class="transformer-card" id="card10">
+        <div class="label">Original:</div>
+        <div class="original-sentence">Она <b>сейчас</b> говорит по-русски хорошо.</div>
+        <div class="transformation-area">
+            <div class="label">Wähle den passenden Kontrast:</div>
+            <div class="option-grid">
+                <button class="choice-btn" onclick="transform(this, true, 'card10', 'Год назад она не знала ни слова, а теперь говорит по-русски хорошо.')">Год назад она не знала ни слова...</button>
+                <button class="choice-btn" onclick="transform(this, false, 'card10')">Вчера она тоже говорила по-русски...</button>
+            </div>
+        </div>
+        <div class="result-sentence"></div>
+        <div class="footer-btns">
+            <button class="main-btn reset-btn" onclick="resetCard('card10')">Reset</button>
+            <button class="main-btn solution-btn" onclick="showSol('card10', 0)">Lösung</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function transform(btn, isCorrect, cardId, newSentence) {
+        const card = document.getElementById(cardId);
+        const btns = card.querySelectorAll('.choice-btn');
+        const result = card.querySelector('.result-sentence');
+
+        // Reset buttons in this card
+        btns.forEach(b => b.className = 'choice-btn');
+
+        if (isCorrect) {
+            btn.classList.add('correct');
+            result.innerHTML = "<strong>Ergebnis:</strong> " + newSentence;
+            result.style.display = "block";
+        } else {
+            btn.classList.add('incorrect');
+            result.style.display = "none";
+        }
+    }
+
+    function resetCard(cardId) {
+        const card = document.getElementById(cardId);
+        const btns = card.querySelectorAll('.choice-btn');
+        const result = card.querySelector('.result-sentence');
+        
+        btns.forEach(b => b.className = 'choice-btn');
+        result.style.display = "none";
+    }
+
+    function showSol(cardId, correctIdx) {
+        const card = document.getElementById(cardId);
+        const btns = card.querySelectorAll('.choice-btn');
+        // Manually trigger the click logic
+        btns[correctIdx].click();
+    }
+</script>
+
+</body>
+</html>
