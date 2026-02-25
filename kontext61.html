@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контекст-детектив: СЕЙЧАС и ТЕПЕРЬ</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary-color); }
+        h2 { font-weight: 300; margin-top: -10px; padding-bottom: 20px; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 15px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .main-controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .shuffle-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .shuffle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            background-color: #2980b9;
+        }
+
+        .task-card {
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background-color: #fff;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sentence {
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+            padding: 15px;
+            background: #fdfdfd;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-group h4 {
+            margin: 0 0 5px 0;
+            font-size: 0.85em;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            text-align: left;
+            height: 100%;
+            font-family: inherit;
+        }
+
+        .choice-btn:hover { border-color: var(--secondary-color); background: #f7fafc; }
+
+        .selected-correct {
+            background-color: var(--success-color) !important;
+            border-color: #1e7e34 !important;
+            color: white !important;
+        }
+
+        .selected-incorrect {
+            background-color: var(--error-color) !important;
+            border-color: #bd2130 !important;
+            color: white !important;
+        }
+
+        .card-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .control-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            color: white;
+        }
+
+        .card-reset-btn { background: #a0aec0; }
+        .solution-btn { background: #718096; }
+
+        @media (max-width: 650px) {
+            .options-container { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+            .shuffle-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>О русском по-русски</h1>
+    <h2>Контекст-детектив</h2>
+
+    <div class="instruction">
+        <strong>Инструкция:</strong> Выберите правильное слово <b>И</b> логическое объяснение.
+        <br><br>
+        1. Выберите слово (<b>СЕЙЧАС</b> или <b>ТЕПЕРЬ</b>).<br>
+        2. Выберите <b>причину</b> выбора.
+        <br><br>
+        <em>Зелёный = правильно, Красный = ошибка.</em>
+    </div>
+
+    <div class="main-controls">
+        <button class="shuffle-btn" onclick="renderShuffledTasks()">🔄 Сбросить и перемешать</button>
+    </div>
+
+    <div id="tasks-wrapper"></div>
+</div>
+
+<script>
+    const originalTaskData = [
+        {
+            sentence: "Раньше я жил в Москве, а ________ живу в Берлине.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Это просто фиксация момента.", "Это контраст с прошлым местом жительства."],
+            correctWord: "теперь",
+            correctReasonIdx: 1
+        },
+        {
+            sentence: "Где ты ________? Я тебя не вижу.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Вопрос о текущем местонахождении.", "Результат долгих перемен."],
+            correctWord: "сейчас",
+            correctReasonIdx: 0
+        },
+        {
+            sentence: "Раньше я плохо понимал, но ________ всё ясно.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Процесс понимания в эту секунду.", "Новое состояние после обучения."],
+            correctWord: "теперь",
+            correctReasonIdx: 1
+        },
+        {
+            sentence: "Подожди, я ________ приду!",
+            options: ["сейчас", "теперь"],
+            reasons: ["Речь о ближайшем моменте времени.", "Сравнение со временем вчера."],
+            correctWord: "сейчас",
+            correctReasonIdx: 0
+        },
+        {
+            sentence: "Обед закончен, ________ пора работать.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Настоящее время без сравнения.", "Новый этап после окончания перерыва."],
+            correctWord: "теперь",
+            correctReasonIdx: 1
+        },
+        {
+            sentence: "Посмотри, самолёт ________ летит!",
+            options: ["сейчас", "теперь"],
+            reasons: ["Наблюдение за действием в этот момент.", "Самолёт летит иначе, чем раньше."],
+            correctWord: "сейчас",
+            correctReasonIdx: 0
+        },
+        {
+            sentence: "Раньше здесь был лес, а ________ здесь город.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Текущий вид здания.", "Сильное изменение ситуации со временем."],
+            correctWord: "теперь",
+            correctReasonIdx: 1
+        },
+        {
+            sentence: "Который ________ час?",
+            options: ["сейчас", "теперь"],
+            reasons: ["Стандартный вопрос о времени сейчас.", "Сравнение времени со старыми часами."],
+            correctWord: "сейчас",
+            correctReasonIdx: 0
+        },
+        {
+            sentence: "Я бросил курить, и ________ чувствую себя лучше.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Просто ощущение в данный момент.", "Следствие важной перемены в жизни."],
+            correctWord: "теперь",
+            correctReasonIdx: 1
+        },
+        {
+            sentence: "Мама ________ на кухне, она готовит.",
+            options: ["сейчас", "теперь"],
+            reasons: ["Информация о месте в данный момент.", "Она готовит лучше, чем в прошлом году."],
+            correctWord: "сейчас",
+            correctReasonIdx: 0
+        }
+    ];
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function renderShuffledTasks() {
+        const wrapper = document.getElementById('tasks-wrapper');
+        wrapper.innerHTML = '';
+        const shuffledData = shuffle([...originalTaskData]);
+
+        shuffledData.forEach((task, index) => {
+            const taskId = `task-${index}`;
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.id = taskId;
+            card.innerHTML = `
+                <div class="sentence">${task.sentence}</div>
+                <div class="options-container">
+                    <div class="option-group">
+                        <h4>1. Выберите слово</h4>
+                        <button class="choice-btn" onclick="checkStep(this, '${task.correctWord}')">${task.options[0]}</button>
+                        <button class="choice-btn" onclick="checkStep(this, '${task.correctWord}')">${task.options[1]}</button>
+                    </div>
+                    <div class="option-group">
+                        <h4>2. Выберите причину</h4>
+                        <button class="choice-btn" onclick="checkStep(this, 'reason', ${task.correctReasonIdx})">${task.reasons[0]}</button>
+                        <button class="choice-btn" onclick="checkStep(this, 'reason', ${task.correctReasonIdx})">${task.reasons[1]}</button>
+                    </div>
+                </div>
+                <div class="card-controls">
+                    <button class="control-btn card-reset-btn" onclick="resetSingleCard('${taskId}')">Сбросить</button>
+                    <button class="control-btn solution-btn" onclick="solveSingleCard('${taskId}', ${task.correctWord === 'сейчас' ? 0 : 1}, ${task.correctReasonIdx})">Показать ответ</button>
+                </div>
+            `;
+            wrapper.appendChild(card);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function checkStep(btn, correctVal, correctIdx) {
+        const group = btn.parentElement;
+        const buttons = group.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.classList.remove('selected-correct', 'selected-incorrect'));
+
+        if (correctVal === 'reason') {
+            const idx = Array.from(buttons).indexOf(btn);
+            if (idx === correctIdx) {
+                btn.classList.add('selected-correct');
+            } else {
+                btn.classList.add('selected-incorrect');
+            }
+        } else {
+            if (btn.innerText.toLowerCase() === correctVal) {
+                btn.classList.add('selected-correct');
+            } else {
+                btn.classList.add('selected-incorrect');
+            }
+        }
+    }
+
+    function resetSingleCard(id) {
+        const card = document.getElementById(id);
+        const buttons = card.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.classList.remove('selected-correct', 'selected-incorrect'));
+    }
+
+    function solveSingleCard(id, wordIdx, reasonIdx) {
+        resetSingleCard(id);
+        const card = document.getElementById(id);
+        const groups = card.querySelectorAll('.option-group');
+        groups[0].querySelectorAll('.choice-btn')[wordIdx].classList.add('selected-correct');
+        groups[1].querySelectorAll('.choice-btn')[reasonIdx].classList.add('selected-correct');
+    }
+
+    window.onload = renderShuffledTasks;
+</script>
+
+</body>
+</html>
