@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wort-Puzzle: СЕЙЧАС vs. ТЕПЕРЬ</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --tile-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; margin-bottom: 10px; }
+        h2 { font-weight: 300; color: var(--secondary-color); }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .task-card {
+            background: #fff;
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+
+        .task-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #7f8c8d;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Wort-Pool und Zielbereich */
+        .word-pool, .target-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 50px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: background 0.3s;
+        }
+
+        .word-pool {
+            background: #f1f2f6;
+            border: 1px dashed #cbd5e0;
+        }
+
+        .target-area {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            min-height: 60px;
+        }
+
+        .word-tile {
+            background: var(--tile-bg);
+            border: 1px solid #cbd5e0;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            font-size: 1.1em;
+        }
+
+        .word-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: var(--secondary-color);
+        }
+
+        /* Feedback-Styles */
+        .correct-animation {
+            border-color: var(--success-color) !important;
+            background-color: #d4edda !important;
+        }
+
+        .error-animation {
+            border-color: var(--error-color) !important;
+            background-color: #f8d7da !important;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .check-btn { background: var(--secondary-color); }
+        .reset-btn { background: #95a5a6; }
+        .solution-btn { background: #7f8c8d; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .word-tile { padding: 6px 12px; font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Wort-Puzzle</h1>
+    <h2>Signalwörter & Kontext</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Bauen Sie die Sätze korrekt zusammen. 
+        Klicken Sie auf die Wörter, um sie in das weiße Feld zu schieben.
+        <br><br>
+        Achten Sie auf Wörter wie <b>Раньше</b> (früher) oder <b>Сначала</b> (zuerst) – sie verlangen oft nach <b>ТЕПЕРЬ</b> im zweiten Satzteil.
+    </div>
+
+    <div id="quiz-container">
+        <!-- Aufgaben werden hier via JS geladen -->
+    </div>
+</div>
+
+<script>
+    const sentences = [
+        { id: 1, correct: ["Раньше", "я", "не", "знал,", "а", "теперь", "знаю."], hint: "Früher wusste ich es nicht, aber jetzt weiß ich es." },
+        { id: 2, correct: ["Сначала", "шёл", "дождь,", "а", "теперь", "светит", "солнце."], hint: "Zuerst regnete es, aber jetzt scheint die Sonne." },
+        { id: 3, correct: ["Раньше", "здесь", "был", "лес,", "а", "теперь", "магазин."], hint: "Früher war hier ein Wald, jetzt ein Laden." },
+        { id: 4, correct: ["Сейчас", "я", "читаю", "интересную", "книгу."], hint: "Jetzt gerade lese ich ein interessantes Buch." },
+        { id: 5, correct: ["Сначала", "мы", "жили", "в", "Москве,", "а", "теперь", "в", "Берлине."], hint: "Zuerst lebten wir in Moskau, aber jetzt in Berlin." },
+        { id: 6, correct: ["Где", "ты", "сейчас", "работаешь?"], hint: "Wo arbeitest du jetzt gerade?" },
+        { id: 7, correct: ["Раньше", "он", "был", "студентом,", "а", "теперь", "директор."], hint: "Früher war er Student, jetzt ist er Direktor." },
+        { id: 8, correct: ["Сейчас", "без", "пяти", "минут", "восемь."], hint: "Jetzt ist es fünf vor acht." },
+        { id: 9, correct: ["Сначала", "он", "молчал,", "а", "теперь", "много", "говорит."], hint: "Zuerst schwieg er, aber jetzt spricht er viel." },
+        { id: 10, correct: ["Мы", "купили", "машину,", "и", "теперь", "много", "путешествуем."], hint: "Wir haben ein Auto gekauft und reisen jetzt viel." }
+    ];
+
+    function shuffle(array) {
+        return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function renderTasks() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+
+        sentences.forEach(s => {
+            const taskCard = document.createElement('div');
+            taskCard.className = 'task-card';
+            taskCard.id = `task-${s.id}`;
+
+            const shuffledWords = shuffle(s.correct);
+
+            taskCard.innerHTML = `
+                <div class="task-header">
+                    <span>Aufgabe ${s.id}</span>
+                    <span style="font-weight:normal; font-style:italic;">${s.hint}</span>
+                </div>
+                <div class="target-area" id="target-${s.id}"></div>
+                <div class="word-pool" id="pool-${s.id}">
+                    ${shuffledWords.map(w => `<div class="word-tile" onclick="moveWord(this)">${w}</div>`).join('')}
+                </div>
+                <div class="controls">
+                    <button class="check-btn" onclick="checkTask(${s.id})">Überprüfen</button>
+                    <button class="reset-btn" onclick="resetTask(${s.id})">Zurücksetzen</button>
+                    <button class="solution-btn" onclick="showSolution(${s.id})">Lösung anzeigen</button>
+                </div>
+            `;
+            container.appendChild(taskCard);
+        });
+    }
+
+    window.moveWord = function(tile) {
+        const parent = tile.parentElement;
+        const taskId = parent.id.split('-')[1];
+        const target = document.getElementById(`target-${taskId}`);
+        const pool = document.getElementById(`pool-${taskId}`);
+
+        if (parent.classList.contains('word-pool')) {
+            target.appendChild(tile);
+        } else {
+            pool.appendChild(tile);
+        }
+        // Feedback zurücksetzen bei Bewegung
+        target.classList.remove('correct-animation', 'error-animation');
+    };
+
+    window.checkTask = function(id) {
+        const target = document.getElementById(`target-${id}`);
+        const currentWords = Array.from(target.children).map(t => t.innerText);
+        const correctWords = sentences.find(s => s.id === id).correct;
+
+        if (JSON.stringify(currentWords) === JSON.stringify(correctWords)) {
+            target.classList.add('correct-animation');
+            target.classList.remove('error-animation');
+        } else {
+            target.classList.add('error-animation');
+            target.classList.remove('correct-animation');
+        }
+    };
+
+    window.resetTask = function(id) {
+        const target = document.getElementById(`target-${id}`);
+        const pool = document.getElementById(`pool-${id}`);
+        const tiles = Array.from(target.children);
+        tiles.forEach(t => pool.appendChild(t));
+        target.classList.remove('correct-animation', 'error-animation');
+        
+        // Pool neu mischen
+        const allTiles = Array.from(pool.children);
+        shuffle(allTiles).forEach(t => pool.appendChild(t));
+    };
+
+    window.showSolution = function(id) {
+        const target = document.getElementById(`target-${id}`);
+        const pool = document.getElementById(`pool-${id}`);
+        const correctWords = sentences.find(s => s.id === id).correct;
+
+        // Alle zurück in den Pool
+        const allTiles = [...Array.from(target.children), ...Array.from(pool.children)];
+        
+        // In korrekter Reihenfolge ins Target schieben
+        target.innerHTML = '';
+        correctWords.forEach(word => {
+            const tileIdx = allTiles.findIndex(t => t.innerText === word);
+            const tile = allTiles.splice(tileIdx, 1)[0];
+            target.appendChild(tile);
+        });
+        target.classList.add('correct-animation');
+    };
+
+    renderTasks();
+</script>
+
+</body>
+</html>
