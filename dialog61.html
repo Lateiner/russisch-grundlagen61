@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat-Quiz: СЕЙЧАС oder ТЕПЕРЬ?</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #25d366; /* WhatsApp Grün */
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #e5ddd5; /* Chat Hintergrund */
+            --msg-in: #ffffff;
+            --msg-out: #dcf8c6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-color);
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .instruction {
+            background: #fff;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* Chat Bereich */
+        .chat-window {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .bubble {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+            font-size: 1.1em;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .bubble.in {
+            align-self: flex-start;
+            background: var(--msg-in);
+        }
+
+        .bubble.out {
+            align-self: flex-end;
+            background: var(--msg-out);
+        }
+
+        .author {
+            font-size: 0.7em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #075e54;
+        }
+
+        /* Lücken und Buttons */
+        .gap {
+            display: inline-block;
+            min-width: 80px;
+            border-bottom: 2px solid #999;
+            text-align: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .choice-box {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .choice-btn {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .choice-btn:hover { background: #f9f9f9; }
+
+        /* Feedback Farben */
+        .correct { 
+            background-color: var(--success-color) !important; 
+            color: white !important; 
+            border-color: #1e7e34 !important; 
+        }
+        .incorrect { 
+            background-color: var(--error-color) !important; 
+            color: white !important; 
+            border-color: #bd2130 !important; 
+        }
+
+        /* Steuerung */
+        .footer {
+            background: #f0f0f0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        button.main-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .reset-btn { background: #718096; }
+        .solution-btn { background: #4a5568; }
+        button.main-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 480px) {
+            .bubble { max-width: 95%; }
+            .container { border-radius: 0; padding: 0; margin: 0; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <b>Russisch Chat-Trainer</b>
+    </header>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Vervollständige den Dialog. Klicke auf das richtige Wort in den Sprechblasen.
+        <br>• <b>СЕЙЧАС:</b> Momentaufnahme / gerade jetzt.
+        <br>• <b>ТЕПЕРЬ:</b> Änderung / im Vergleich zu früher.
+    </div>
+
+    <div class="chat-window" id="chat">
+        <!-- Dialog 1 -->
+        <div class="bubble in">
+            <span class="author">Анна</span>
+            Привет! Что ты делаешь?
+        </div>
+        <div class="bubble out" id="d1">
+            <span class="author">Я</span>
+            Привет! Я <span class="gap">...</span> обедаю. Хочешь со мной?
+            <div class="choice-box">
+                <button class="choice-btn" onclick="check(this, 'сейчас', 'd1')">сейчас</button>
+                <button class="choice-btn" onclick="check(this, 'теперь', 'd1')">теперь</button>
+            </div>
+        </div>
+
+        <!-- Dialog 2 -->
+        <div class="bubble in">
+            <span class="author">Анна</span>
+            Ой, я уже поела. Слушай, ты всё ещё куришь?
+        </div>
+        <div class="bubble out" id="d2">
+            <span class="author">Я</span>
+            Нет, я бросил. <span class="gap">...</span> я веду здоровый образ жизни!
+            <div class="choice-box">
+                <button class="choice-btn" onclick="check(this, 'сейчас', 'd2')">сейчас</button>
+                <button class="choice-btn" onclick="check(this, 'теперь', 'd2')">теперь</button>
+            </div>
+        </div>
+
+        <!-- Dialog 3 -->
+        <div class="bubble in">
+            <span class="author">Анна</span>
+            Молодец! А где ты живёшь? Всё там же?
+        </div>
+        <div class="bubble out" id="d3">
+            <span class="author">Я</span>
+            Нет, мы переехали. <span class="gap">...</span> у нас большая квартира в центре.
+            <div class="choice-box">
+                <button class="choice-btn" onclick="check(this, 'сейчас', 'd3')">сейчас</button>
+                <button class="choice-btn" onclick="check(this, 'теперь', 'd3')">теперь</button>
+            </div>
+        </div>
+
+        <!-- Dialog 4 -->
+        <div class="bubble in" id="d4">
+            <span class="author">Анна</span>
+            Здорово! Ты <span class="gap">...</span> дома? Я могу зайти?
+            <div class="choice-box">
+                <button class="choice-btn" onclick="check(this, 'сейчас', 'd4')">сейчас</button>
+                <button class="choice-btn" onclick="check(this, 'теперь', 'd4')">теперь</button>
+            </div>
+        </div>
+
+        <!-- Dialog 5 -->
+        <div class="bubble out" id="d5">
+            <span class="author">Я</span>
+            Прости, <span class="gap">...</span> я очень занят. Давай вечером?
+            <div class="choice-box">
+                <button class="choice-btn" onclick="check(this, 'сейчас', 'd5')">сейчас</button>
+                <button class="choice-btn" onclick="check(this, 'теперь', 'd5')">теперь</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="main-btn reset-btn" onclick="resetAll()">Zurücksetzen</button>
+        <button class="main-btn solution-btn" onclick="showSolutions()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Korrekte Lösungen zugeordnet zu den IDs
+    const solutions = {
+        'd1': 'сейчас',
+        'd2': 'теперь',
+        'd3': 'теперь',
+        'd4': 'сейчас',
+        'd5': 'сейчас'
+    };
+
+    function check(btn, choice, dialogId) {
+        const container = document.getElementById(dialogId);
+        const gap = container.querySelector('.gap');
+        const buttons = container.querySelectorAll('.choice-btn');
+        
+        // Farbkennzeichnung aller Buttons in dieser Nachricht löschen
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+        
+        if (choice === solutions[dialogId]) {
+            btn.classList.add('correct');
+            gap.innerText = choice;
+            gap.style.color = '#27ae60';
+        } else {
+            btn.classList.add('incorrect');
+            gap.innerText = '...';
+            gap.style.color = '#000';
+        }
+    }
+
+    function resetAll() {
+        // Alle Nachrichten mit Lücken finden
+        const dialogIds = Object.keys(solutions);
+        dialogIds.forEach(id => {
+            const container = document.getElementById(id);
+            const gap = container.querySelector('.gap');
+            gap.innerText = '...';
+            gap.style.color = '#000';
+            const buttons = container.querySelectorAll('.choice-btn');
+            buttons.forEach(btn => btn.classList.remove('correct', 'incorrect'));
+        });
+    }
+
+    function showSolutions() {
+        for (let id in solutions) {
+            const container = document.getElementById(id);
+            if (!container) continue;
+
+            const gap = container.querySelector('.gap');
+            const btns = container.querySelectorAll('.choice-btn');
+            const correctWord = solutions[id];
+            
+            // Lücke ausfüllen
+            gap.innerText = correctWord;
+            gap.style.color = '#27ae60';
+            
+            // Buttons visuell anpassen
+            btns.forEach(btn => {
+                btn.classList.remove('incorrect'); // Rote Markierung löschen
+                if (btn.innerText.trim() === correctWord) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.remove('correct');
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
