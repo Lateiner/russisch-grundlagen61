@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Slider: Was hat sich geändert?</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --before-bg: #dfe6e9;
+            --after-bg: #fab1a0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 15px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; }
+        h2 { font-weight: 300; color: var(--secondary-color); margin-bottom: 30px; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 15px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        /* Slider Bereich */
+        .task-card {
+            background: #fff;
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .comparison-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .state-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            user-select: none;
+        }
+
+        .before-layer {
+            background-color: #bdc3c7;
+            z-index: 1;
+        }
+
+        .after-layer {
+            background-color: #f1c40f;
+            z-index: 2;
+            clip-path: inset(0 100% 0 0); /* Versteckt durch CSS Clip */
+        }
+
+        .slider-input {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 105%;
+            z-index: 3;
+            cursor: pointer;
+            opacity: 0.7;
+            margin: 0;
+        }
+
+        .label-box {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            font-weight: bold;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        /* Quiz Optionen */
+        .options-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            text-align: left;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            border-color: var(--secondary-color);
+            background: #f7fafc;
+        }
+
+        /* Feedback */
+        .correct { background-color: var(--success-color) !important; color: white !important; border-color: #1e7e34 !important; }
+        .incorrect { background-color: var(--error-color) !important; color: white !important; border-color: #bd2130 !important; }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .ctrl-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85em;
+        }
+
+        .reset-btn { background-color: #95a5a6; }
+        .sol-btn { background-color: #7f8c8d; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .comparison-container { height: 150px; }
+            .state-layer { font-size: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Was hat sich geändert?</h1>
+    <h2>Interaktiver Kontrast-Trainer</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Bewege den Schieberegler in der Mitte des Bildes von links nach rechts, um die Veränderung zu sehen.
+        <br><br>
+        Wähle danach den russischen Satz aus, der diese Veränderung mit <b>ТЕПЕРЬ</b> (jetzt/nun im Vergleich zu früher) am besten beschreibt.
+    </div>
+
+    <div id="quiz-wrapper">
+        <!-- Aufgaben werden hier generiert -->
+    </div>
+
+</div>
+
+<script>
+    const data = [
+        {
+            id: 1,
+            beforeIcon: "🏚️",
+            afterIcon: "🏠",
+            options: [
+                "Раньше здесь была руина, а теперь это красивый дом.",
+                "Сейчас это красивый дом, а раньше была руина.",
+                "Теперь здесь руина, а раньше был дом."
+            ],
+            correct: 0,
+            desc: "Hausbau"
+        },
+        {
+            id: 2,
+            beforeIcon: "🚬",
+            afterIcon: "🏃‍♂️",
+            options: [
+                "Сейчас он бегает, а теперь он курит.",
+                "Раньше он курил, а теперь он ведёт здоровый образ жизни.",
+                "Теперь он курит, а раньше он бегал."
+            ],
+            correct: 1,
+            desc: "Gewohnheiten"
+        },
+        {
+            id: 3,
+            beforeIcon: "🚲",
+            afterIcon: "🚗",
+            options: [
+                "Раньше у нас была машина, а теперь велосипед.",
+                "Сейчас мы ездим на машине, а раньше на велосипеде.",
+                "Мы купили машину, и теперь мы ездим на ней, а не на велосипеде."
+            ],
+            correct: 2,
+            desc: "Transport"
+        },
+        {
+            id: 4,
+            beforeIcon: "❄️",
+            afterIcon: "☀️",
+            options: [
+                "Раньше была зима, а теперь светит солнце и тепло.",
+                "Теперь идёт снег, а раньше было лето.",
+                "Сейчас зима, а теперь весна."
+            ],
+            correct: 0,
+            desc: "Wetter"
+        },
+        {
+            id: 5,
+            beforeIcon: "🎓",
+            afterIcon: "🩺",
+            options: [
+                "Теперь она студентка, а раньше была врачом.",
+                "Раньше она была студенткой, а теперь она работает врачом.",
+                "Сейчас она врач, а теперь она студентка."
+            ],
+            correct: 1,
+            desc: "Karriere"
+        },
+        {
+            id: 6,
+            beforeIcon: "🌑",
+            afterIcon: "💡",
+            options: [
+                "Раньше было темно, а теперь светло.",
+                "Теперь темно, а раньше было светло.",
+                "Сейчас светло, потому что теперь темно."
+            ],
+            correct: 0,
+            desc: "Licht"
+        },
+        {
+            id: 7,
+            beforeIcon: "📉",
+            afterIcon: "📈",
+            options: [
+                "Раньше дела шли плохо, а теперь всё отлично.",
+                "Теперь дела идут плохо, а раньше хорошо.",
+                "Сейчас дела идут хорошо, а теперь плохо."
+            ],
+            correct: 0,
+            desc: "Erfolg"
+        },
+        {
+            id: 8,
+            beforeIcon: "🧱",
+            afterIcon: "🏰",
+            options: [
+                "Раньше это были просто камни, а теперь это замок.",
+                "Теперь это камни, а раньше был замок.",
+                "Сейчас это замок, а теперь это камни."
+            ],
+            correct: 0,
+            desc: "Bauwerk"
+        },
+        {
+            id: 9,
+            beforeIcon: "🔋",
+            afterIcon: "🔌",
+            options: [
+                "Телефон разрядился, но теперь он работает.",
+                "Раньше телефон работал, а теперь он сломался.",
+                "Теперь батарея пустая, а раньше была полная."
+            ],
+            correct: 0,
+            desc: "Technik"
+        },
+        {
+            id: 10,
+            beforeIcon: "📦",
+            afterIcon: "🎁",
+            options: [
+                "Раньше это была простая коробка, а теперь это подарок.",
+                "Теперь это коробка, а раньше был подарок.",
+                "Сейчас это подарок, а теперь коробка."
+            ],
+            correct: 0,
+            desc: "Geschenk"
+        }
+    ];
+
+    function renderQuiz() {
+        const wrapper = document.getElementById('quiz-wrapper');
+        wrapper.innerHTML = '';
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.id = `task-${item.id}`;
+
+            card.innerHTML = `
+                <div class="label-box">
+                    <span>Раньше (Früher)</span>
+                    <span>Теперь (Jetzt/Nun)</span>
+                </div>
+                <div class="comparison-container">
+                    <div class="state-layer before-layer">${item.beforeIcon}</div>
+                    <div class="state-layer after-layer" id="after-${item.id}">${item.afterIcon}</div>
+                    <input type="range" min="0" max="100" value="0" class="slider-input" 
+                           oninput="updateSlider(this, ${item.id})">
+                </div>
+                
+                <div class="options-grid">
+                    ${item.options.map((opt, idx) => `
+                        <button class="option-btn" onclick="checkAnswer(this, ${idx}, ${item.correct})">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="controls">
+                    <button class="ctrl-btn reset-btn" onclick="resetTask(${item.id})">Zurücksetzen</button>
+                    <button class="ctrl-btn sol-btn" onclick="showSolution(${item.id}, ${item.correct})">Lösung</button>
+                </div>
+            `;
+            wrapper.appendChild(card);
+        });
+    }
+
+    window.updateSlider = function(input, id) {
+        const afterLayer = document.getElementById(`after-${id}`);
+        const val = input.value;
+        afterLayer.style.clipPath = `inset(0 ${100 - val}% 0 0)`;
+    };
+
+    window.checkAnswer = function(btn, selected, correct) {
+        const container = btn.parentElement;
+        const buttons = container.querySelectorAll('.option-btn');
+        
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+        
+        if (selected === correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+        }
+    };
+
+    window.resetTask = function(id) {
+        const card = document.getElementById(`task-${id}`);
+        const slider = card.querySelector('input[type="range"]');
+        const afterLayer = document.getElementById(`after-${id}`);
+        const buttons = card.querySelectorAll('.option-btn');
+
+        slider.value = 0;
+        afterLayer.style.clipPath = `inset(0 100% 0 0)`;
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+    };
+
+    window.showSolution = function(id, correctIdx) {
+        const card = document.getElementById(`task-${id}`);
+        const buttons = card.querySelectorAll('.option-btn');
+        const slider = card.querySelector('input[type="range"]');
+        const afterLayer = document.getElementById(`after-${id}`);
+
+        // Slider auf "Nachher" setzen
+        slider.value = 100;
+        afterLayer.style.clipPath = `inset(0 0% 0 0)`;
+
+        buttons.forEach((b, idx) => {
+            b.classList.remove('correct', 'incorrect');
+            if (idx === correctIdx) b.classList.add('correct');
+        });
+    };
+
+    renderQuiz();
+</script>
+
+</body>
+</html>
