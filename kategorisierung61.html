@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontext-Check: СЕЙЧАС vs. ТЕПЕРЬ</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 5px; }
+        h2 { text-align: center; color: var(--secondary-color); margin-top: 0; font-weight: 300; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 15px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+
+        /* Karten-Pool */
+        #item-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            background: #fdfdfd;
+            padding: 20px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            min-height: 120px;
+            margin-bottom: 30px;
+        }
+
+        .drag-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-size: 1em;
+            transition: all 0.2s;
+            border-bottom: 3px solid #cbd5e0;
+        }
+
+        .drag-item:active { cursor: grabbing; transform: scale(1.02); }
+
+        /* Ziel-Container */
+        .drop-zones-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            min-height: 350px;
+            border: 3px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .drop-zone h3 {
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.3em;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .drop-zone p.description {
+            text-align: center;
+            font-size: 0.85em;
+            color: #718096;
+            margin-bottom: 15px;
+            pointer-events: none;
+        }
+
+        .zone-seychas { background-color: #ebf8ff; border-color: #bee3f8; }
+        .zone-teper { background-color: #fffaf0; border-color: #feebc8; }
+
+        /* Feedback-Zustände */
+        .item-correct {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border-color: #1e7e34 !important;
+            border-bottom-color: #155724 !important;
+        }
+
+        .item-incorrect {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border-color: #bd2130 !important;
+            border-bottom-color: #721c24 !important;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 1em;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .reset-btn { background-color: #718096; }
+        .solution-btn { background-color: #4a5568; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Mobile Optimierung */
+        @media (max-width: 700px) {
+            .drop-zones-container { grid-template-columns: 1fr; }
+            .drop-zone { min-height: 250px; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>СЕЙЧАС vs. ТЕПЕРЬ</h2>
+
+    <div class="instruction">
+        <strong>Logik-Trainer:</strong> Welches russische Wort für "jetzt" passt in den Kontext der deutschen Sätze?
+        <br>• Ziehen Sie Sätze über den <strong>Ist-Zustand / Moment</strong> nach links (<strong>СЕЙЧАС</strong>).
+        <br>• Ziehen Sie Sätze über <strong>Veränderungen / Kontraste</strong> nach rechts (<strong>ТЕПЕРЬ</strong>).
+    </div>
+
+    <div id="item-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Sätze werden geladen -->
+    </div>
+
+    <div class="drop-zones-container">
+        <!-- Zone СЕЙЧАС -->
+        <div class="drop-zone zone-seychas" id="zone-сейчас" ondrop="drop(event)" ondragover="allowDrop(event)" data-category="сейчас">
+            <h3>СЕЙЧАС</h3>
+            <p class="description">Momentaufnahme / gerade eben</p>
+        </div>
+        
+        <!-- Zone ТЕПЕРЬ -->
+        <div class="drop-zone zone-teper" id="zone-теперь" ondrop="drop(event)" ondragover="allowDrop(event)" data-category="теперь">
+            <h3>ТЕПЕРЬ</h3>
+            <p class="description">Veränderung / im Vergleich zu früher</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="reset-btn" onclick="resetGame()">Neu mischen</button>
+        <button class="solution-btn" onclick="showSolution()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const data = [
+        // Kategorie: СЕЙЧАС (Momentan/Gerade)
+        { id: 1, text: "Wo bist du gerade?", cat: "сейчас" },
+        { id: 2, text: "Es regnet im Moment.", cat: "сейчас" },
+        { id: 3, text: "Ich esse gerade zu Mittag.", cat: "сейчас" },
+        { id: 4, text: "Das Baby schläft gerade.", cat: "сейчас" },
+        { id: 5, text: "Es ist jetzt 10 Uhr morgens.", cat: "сейчас" },
+        { id: 6, text: "Was machst du gerade?", cat: "сейчас" },
+        { id: 7, text: "Ich kann gerade nicht sprechen.", cat: "сейчас" },
+        { id: 8, text: "Es ist jetzt Frühling.", cat: "сейчас" },
+        { id: 9, text: "Warte, ich komme sofort (jetzt).", cat: "сейчас" },
+        { id: 10, text: "Schau, da fliegt gerade ein Flugzeug.", cat: "сейчас" },
+
+        // Kategorie: ТЕПЕРЬ (Veränderung/Kontrast)
+        { id: 11, text: "Früher rauchte er, jetzt nicht mehr.", cat: "теперь" },
+        { id: 12, text: "Wir sind umgezogen und wohnen jetzt hier.", cat: "теперь" },
+        { id: 13, text: "Zuerst war es schwer, jetzt ist es klar.", cat: "теперь" },
+        { id: 14, text: "Früher war hier ein Wald, jetzt ein Haus.", cat: "теперь" },
+        { id: 15, text: "Ich habe gelernt und verstehe jetzt alles.", cat: "теперь" },
+        { id: 16, text: "Früher war sie arm, jetzt ist sie reich.", cat: "теперь" },
+        { id: 17, text: "Wir haben ein Auto, jetzt reisen wir viel.", cat: "теперь" },
+        { id: 18, text: "Du bist jetzt groß und musst helfen.", cat: "теперь" },
+        { id: 19, text: "Endlich habe ich Zeit, jetzt lese ich.", cat: "теперь" },
+        { id: 20, text: "Nach dem Sport bin ich jetzt müde.", cat: "теперь" }
+    ];
+
+    const pool = document.getElementById('item-pool');
+
+    function initGame() {
+        pool.innerHTML = '';
+        // Alle Zonen leeren (außer Titel und Beschreibung)
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            const items = zone.querySelectorAll('.drag-item');
+            items.forEach(item => item.remove());
+        });
+
+        // Sätze mischen
+        const shuffled = [...data].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'drag-item';
+            div.innerText = item.text;
+            div.id = 'item-' + item.id;
+            div.draggable = true;
+            div.setAttribute('data-cat', item.cat);
+            div.ondragstart = drag;
+            // Touch-Support für Mobile
+            div.addEventListener('touchstart', handleTouchStart, false);
+            pool.appendChild(div);
+        });
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const dataId = ev.dataTransfer.getData("text");
+        const draggedElement = document.getElementById(dataId);
+        let target = ev.target;
+
+        // Container finden
+        while (target && !target.classList.contains('drop-zone') && target.id !== 'item-pool') {
+            target = target.parentElement;
+        }
+
+        if (target) {
+            target.appendChild(draggedElement);
+            checkElement(draggedElement, target);
+        }
+    }
+
+    function checkElement(el, zone) {
+        const correctCat = el.getAttribute('data-cat');
+        const zoneCat = zone.getAttribute('data-category');
+
+        el.classList.remove('item-correct', 'item-incorrect');
+
+        if (!zoneCat) return; // Zurück im Pool
+
+        if (correctCat === zoneCat) {
+            el.classList.add('item-correct');
+        } else {
+            el.classList.add('item-incorrect');
+        }
+    }
+
+    // Touch-Handling für ältere/spezifische mobile Browser falls Polyfill klemmt
+    function handleTouchStart(e) {
+        // DragDropTouch Polyfill erledigt die meiste Arbeit
+    }
+
+    function resetGame() {
+        initGame();
+    }
+
+    function showSolution() {
+        data.forEach(item => {
+            const el = document.getElementById('item-' + item.id);
+            const targetZone = document.getElementById('zone-' + item.cat);
+            el.classList.remove('item-incorrect');
+            el.classList.add('item-correct');
+            targetZone.appendChild(el);
+        });
+    }
+
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
