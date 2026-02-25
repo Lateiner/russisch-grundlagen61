@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: СЕЙЧАС vs. ТЕПЕРЬ</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+        }
+
+        .intro-box {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-section {
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .task-container {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .sentence {
+            font-size: 1.15em;
+            margin-bottom: 15px;
+        }
+
+        /* Interaktive Elemente */
+        select, .choice-btn {
+            padding: 8px;
+            font-size: 0.95em;
+            border-radius: 4px;
+            border: 2px solid #ccc;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .radio-label {
+            padding: 8px 12px;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .radio-label:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Feedback-Farben */
+        .correct { 
+            background-color: #d4edda !important; 
+            border-color: var(--success-color) !important; 
+            color: #155724 !important;
+        }
+        .incorrect { 
+            background-color: #f8d7da !important; 
+            border-color: var(--error-color) !important; 
+            color: #721c24 !important;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button.control-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .reset-btn { background: #95a5a6; }
+        .solution-btn { background: #7f8c8d; }
+        button:hover { opacity: 0.85; }
+
+        .choice-btn {
+            background: white;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .btn-group { flex-direction: row; font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>СЕЙЧАС oder ТЕПЕРЬ?</h2>
+
+    <div class="intro-box">
+        <h3>Kurzanleitung</h3>
+        <p>Wann benutzt man welches Wort?</p>
+        <ul>
+            <li><strong>СЕЙЧАС</strong>: Im jetzigen Moment / gerade (Beispiel: Я сейчас ем — Ich esse gerade).</li>
+            <li><strong>ТЕПЕРЬ</strong>: Jetzt, im Vergleich zu früher / nach einer Änderung (Beispiel: Раньше я не знал, а теперь знаю — Früher wusste ich es nicht, aber jetzt weiß ich es).</li>
+        </ul>
+        <p><i>Wähle eine Antwort aus. Du erhältst sofort eine Rückmeldung durch Farben.</i></p>
+    </div>
+
+    <!-- Teil 1: Dropdown 1-5 -->
+    <div class="exercise-section">
+        <h3>Teil 1: Aktueller Moment oder Veränderung?</h3>
+        
+        <div class="task-container" id="task1">
+            <div class="sentence">1. Где ты <select onchange="validateDropdown(this, 'сейчас')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> работаешь?</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task1')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task1', 'сейчас')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task2">
+            <div class="sentence">2. Раньше здесь был лес, а <select onchange="validateDropdown(this, 'теперь')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> здесь город.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task2')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task2', 'теперь')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task3">
+            <div class="sentence">3. <select onchange="validateDropdown(this, 'сейчас')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> два часа дня.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task3')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task3', 'сейчас')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task4">
+            <div class="sentence">4. Ты выучил правила, <select onchange="validateDropdown(this, 'теперь')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> ты можешь писать без ошибок.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task4')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task4', 'теперь')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task5">
+            <div class="sentence">5. Тише! Ребёнок <select onchange="validateDropdown(this, 'сейчас')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> спит.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task5')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task5', 'сейчас')">Lösung</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teil 2: Radio-Buttons 6-10 -->
+    <div class="exercise-section">
+        <h3>Teil 2: Wählen Sie die passende Option</h3>
+        
+        <div class="task-container" id="task6">
+            <div class="sentence">6. Раньше он был студентом, а … он врач.</div>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="q6" onclick="validateRadio(this, false)"> сейчас</label>
+                <label class="radio-label"><input type="radio" name="q6" onclick="validateRadio(this, true)"> теперь</label>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetRadio('task6')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveRadio('task6', 1)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task7">
+            <div class="sentence">7. Подожди минуту, я … приду.</div>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="q7" onclick="validateRadio(this, true)"> сейчас</label>
+                <label class="radio-label"><input type="radio" name="q7" onclick="validateRadio(this, false)"> теперь</label>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetRadio('task7')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveRadio('task7', 0)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task8">
+            <div class="sentence">8. Он бросил курить, и … он чувствует себя лучше.</div>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="q8" onclick="validateRadio(this, false)"> сейчас</label>
+                <label class="radio-label"><input type="radio" name="q8" onclick="validateRadio(this, true)"> теперь</label>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetRadio('task8')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveRadio('task8', 1)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task9">
+            <div class="sentence">9. Вчера мы отдыхали, а … мы работаем.</div>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="q9" onclick="validateRadio(this, false)"> сейчас</label>
+                <label class="radio-label"><input type="radio" name="q9" onclick="validateRadio(this, true)"> теперь</label>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetRadio('task9')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveRadio('task9', 1)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task10">
+            <div class="sentence">10. Что ты … читаешь?</div>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="q10" onclick="validateRadio(this, true)"> сейчас</label>
+                <label class="radio-label"><input type="radio" name="q10" onclick="validateRadio(this, false)"> теперь</label>
+            </div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetRadio('task10')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveRadio('task10', 0)">Lösung</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teil 3: Dropdown 11-15 -->
+    <div class="exercise-section">
+        <h3>Teil 3: Lücken füllen</h3>
+        
+        <div class="task-container" id="task11">
+            <div class="sentence">11. Обед закончился, <select onchange="validateDropdown(this, 'теперь')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> пора за работу.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task11')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task11', 'теперь')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task12">
+            <div class="sentence">12. <select onchange="validateDropdown(this, 'сейчас')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> я живу в центре города.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task12')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task12', 'сейчас')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task13">
+            <div class="sentence">13. Мы купили билеты и <select onchange="validateDropdown(this, 'теперь')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> ждём отпуска.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task13')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task13', 'теперь')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task14">
+            <div class="sentence">14. <select onchange="validateDropdown(this, 'сейчас')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> зима, на улице холодно.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task14')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task14', 'сейчас')">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task15">
+            <div class="sentence">15. Раньше погода была плохая, а <select onchange="validateDropdown(this, 'теперь')"><option value="">---</option><option value="сейчас">сейчас</option><option value="теперь">теперь</option></select> светит солнце.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetDropdown('task15')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveDropdown('task15', 'теперь')">Lösung</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teil 4: Buttons 16-20 -->
+    <div class="exercise-section">
+        <h3>Teil 4: Direkt-Auswahl</h3>
+        
+        <div class="task-container" id="task16">
+            <div class="sentence">16. Мой друг <button class="choice-btn" onclick="validateClick(this, true)">сейчас</button> <button class="choice-btn" onclick="validateClick(this, false)">теперь</button> в кино.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetClick('task16')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveClick('task16', 0)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task17">
+            <div class="sentence">17. Я выпил кофе и <button class="choice-btn" onclick="validateClick(this, false)">сейчас</button> <button class="choice-btn" onclick="validateClick(this, true)">теперь</button> не хочу спать.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetClick('task17')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveClick('task17', 1)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task18">
+            <div class="sentence">18. Извините, я <button class="choice-btn" onclick="validateClick(this, true)">сейчас</button> <button class="choice-btn" onclick="validateClick(this, false)">теперь</button> очень спешу.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetClick('task18')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveClick('task18', 0)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task19">
+            <div class="sentence">19. Мы переехали, и <button class="choice-btn" onclick="validateClick(this, false)">сейчас</button> <button class="choice-btn" onclick="validateClick(this, true)">теперь</button> у нас большая квартира.</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetClick('task19')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveClick('task19', 1)">Lösung</button>
+            </div>
+        </div>
+
+        <div class="task-container" id="task20">
+            <div class="sentence">20. „Где мама?“ — „Она <button class="choice-btn" onclick="validateClick(this, true)">сейчас</button> <button class="choice-btn" onclick="validateClick(this, false)">теперь</button> на кухне.“</div>
+            <div class="btn-group">
+                <button class="control-btn reset-btn" onclick="resetClick('task20')">Zurücksetzen</button>
+                <button class="control-btn solution-btn" onclick="solveClick('task20', 0)">Lösung</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DROP-DOWN LOGIK (Teil 1 & 3) ---
+    function validateDropdown(el, correctAns) {
+        if (el.value === "") {
+            el.className = "";
+            return;
+        }
+        if (el.value === correctAns) {
+            el.className = "correct";
+        } else {
+            el.className = "incorrect";
+        }
+    }
+
+    function resetDropdown(id) {
+        const sel = document.getElementById(id).querySelector('select');
+        sel.value = "";
+        sel.className = "";
+    }
+
+    function solveDropdown(id, ans) {
+        const sel = document.getElementById(id).querySelector('select');
+        sel.value = ans;
+        sel.className = "correct";
+    }
+
+    // --- RADIO-BUTTON LOGIK (Teil 2) ---
+    function validateRadio(el, isCorrect) {
+        const container = el.closest('.radio-group');
+        const labels = container.querySelectorAll('.radio-label');
+        
+        // Alle Labels zurücksetzen
+        labels.forEach(l => l.className = "radio-label");
+        
+        // Das gewählte Label markieren
+        if (isCorrect) {
+            el.parentElement.className = "radio-label correct";
+        } else {
+            el.parentElement.className = "radio-label incorrect";
+        }
+    }
+
+    function resetRadio(id) {
+        const container = document.getElementById(id);
+        const labels = container.querySelectorAll('.radio-label');
+        const inputs = container.querySelectorAll('input');
+        
+        labels.forEach(l => l.className = "radio-label");
+        inputs.forEach(i => i.checked = false);
+    }
+
+    function solveRadio(id, index) {
+        const container = document.getElementById(id);
+        const labels = container.querySelectorAll('.radio-label');
+        const inputs = container.querySelectorAll('input');
+        
+        labels.forEach(l => l.className = "radio-label");
+        inputs[index].checked = true;
+        labels[index].className = "radio-label correct";
+    }
+
+    // --- CLICK-BUTTON LOGIK (Teil 4) ---
+    function validateClick(btn, isCorrect) {
+        const container = btn.parentElement;
+        const buttons = container.querySelectorAll('.choice-btn');
+        
+        buttons.forEach(b => b.className = "choice-btn");
+        
+        if (isCorrect) {
+            btn.className = "choice-btn correct";
+        } else {
+            btn.className = "choice-btn incorrect";
+        }
+    }
+
+    function resetClick(id) {
+        const container = document.getElementById(id);
+        const buttons = container.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.className = "choice-btn");
+    }
+
+    function solveClick(id, index) {
+        const container = document.getElementById(id);
+        const buttons = container.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.className = "choice-btn");
+        buttons[index].className = "choice-btn correct";
+    }
+</script>
+
+</body>
+</html>
