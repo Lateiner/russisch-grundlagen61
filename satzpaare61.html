@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matching: СЕЙЧАС oder ТЕПЕРЬ?</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-color: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        /* Das Spielfeld */
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .left-part {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            min-height: 60px;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        /* Pool der Antwort-Kacheln */
+        .item-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            background: #f1f2f6;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 100px;
+        }
+
+        .drag-item {
+            background: white;
+            border: 1px solid var(--secondary-color);
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.95em;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .drag-item:active { cursor: grabbing; }
+
+        /* Feedback */
+        .correct { background-color: var(--success-color) !important; color: white !important; border-color: #1e7e34 !important; }
+        .incorrect { background-color: var(--error-color) !important; color: white !important; border-color: #bd2130 !important; }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        .reset-btn { background: #95a5a6; }
+        .solution-btn { background: #7f8c8d; }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .matching-grid { grid-template-columns: 1fr; }
+            .left-part { margin-bottom: -10px; border-bottom: none; border-radius: 8px 8px 0 0; }
+            .drop-zone { margin-bottom: 15px; border-radius: 0 0 8px 8px; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Satzpaare verbinden (Matching)</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Ziehen Sie die passende russische Fortsetzung (rechts) zur Situation in der Vergangenheit oder dem aktuellen Zustand (links).
+        <br><br>
+        • <strong>ТЕПЕРЬ:</strong> Kontrast/Änderung zu früher.
+        <br>• <strong>СЕЙЧАС:</strong> Momentaufnahme ohne Vorher-Nachher-Bezug.
+    </div>
+
+    <div class="matching-grid" id="game-grid">
+        <!-- Paare werden per JS geladen -->
+    </div>
+
+    <h3>Verfügbare Antworten:</h3>
+    <div class="item-pool" id="pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Kacheln werden geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="reset-btn" onclick="resetGame()">Alles zurücksetzen</button>
+        <button class="solution-btn" onclick="showSolution()">Lösungen zeigen</button>
+    </div>
+</div>
+
+<script>
+    const pairs = [
+        { id: 1, left: "Früher habe ich geraucht...", right: "а теперь я не курю.", cat: "теперь" },
+        { id: 2, left: "Сначала шёл дождь...", right: "а теперь светит солнце.", cat: "теперь" },
+        { id: 3, left: "Раньше он был студентом...", right: "а теперь он директор.", cat: "теперь" },
+        { id: 4, left: "У нас не было машины...", right: "а теперь мы много путешествуем.", cat: "теперь" },
+        { id: 5, left: "Мама на кухне...", right: "она сейчас готовит ужин.", cat: "сейчас" },
+        { id: 6, left: "Мой брат в комнате...", right: "он сейчас делает уроки.", cat: "сейчас" },
+        { id: 7, left: "Раньше здесь был лес...", right: "а теперь здесь город.", cat: "теперь" },
+        { id: 8, left: "Где вы находитесь?", right: "Мы сейчас в парке.", cat: "сейчас" }
+    ];
+
+    function initGame() {
+        const grid = document.getElementById('game-grid');
+        const pool = document.getElementById('pool');
+        grid.innerHTML = '';
+        pool.innerHTML = '';
+
+        // Linke Seite aufbauen
+        pairs.forEach(pair => {
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'left-part';
+            leftDiv.innerText = pair.left;
+            
+            const dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.id = 'zone-' + pair.id;
+            dropZone.setAttribute('data-correct-id', pair.id);
+            dropZone.ondrop = drop;
+            dropZone.ondragover = allowDrop;
+
+            grid.appendChild(leftDiv);
+            grid.appendChild(dropZone);
+        });
+
+        // Rechte Seite (Kacheln) mischen und in den Pool legen
+        const shuffled = [...pairs].sort(() => Math.random() - 0.5);
+        shuffled.forEach(pair => {
+            const item = document.createElement('div');
+            item.className = 'drag-item';
+            item.innerText = pair.right;
+            item.id = 'item-' + pair.id;
+            item.draggable = true;
+            item.ondragstart = drag;
+            pool.appendChild(item);
+        });
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const itemId = ev.dataTransfer.getData("text");
+        const item = document.getElementById(itemId);
+        let target = ev.target;
+
+        // Falls auf den Text in der Zone gedroppt wird, Container finden
+        while (target && !target.classList.contains('drop-zone') && target.id !== 'pool') {
+            target = target.parentElement;
+        }
+
+        if (target) {
+            target.appendChild(item);
+            validate(item, target);
+        }
+    }
+
+    function validate(item, zone) {
+        item.classList.remove('correct', 'incorrect');
+        
+        if (zone.id === 'pool') return; // Im Pool neutral
+
+        const correctId = zone.getAttribute('data-correct-id');
+        const itemId = item.id.replace('item-', '');
+
+        if (correctId === itemId) {
+            item.classList.add('correct');
+        } else {
+            item.classList.add('incorrect');
+        }
+    }
+
+    function resetGame() {
+        initGame();
+    }
+
+    function showSolution() {
+        pairs.forEach(pair => {
+            const zone = document.getElementById('zone-' + pair.id);
+            const item = document.getElementById('item-' + pair.id);
+            zone.appendChild(item);
+            item.classList.remove('incorrect');
+            item.classList.add('correct');
+        });
+    }
+
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
